@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skoleregler – Videregående skoler i Østfold</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #1a4f8a;
+      --blue-lt: #2a6fba;
+      --accent:  #e8f0fb;
+      --text:    #1c1c1e;
+      --muted:   #555;
+      --border:  #d0d8e8;
+      --warn:    #f59e0b;
+      --warn-lt: #fffbeb;
+      --green:   #166534;
+      --green-lt:#dcfce7;
+      --red:     #991b1b;
+      --red-lt:  #fee2e2;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f4f6fb;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── TOP BANNER ── */
+    .top-banner {
+      background: var(--blue);
+      color: #fff;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+    .top-banner a {
+      color: #a8c8ff;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: auto;
+      border: 1px solid rgba(255,255,255,0.35);
+      padding: 4px 12px;
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .top-banner a:hover { background: rgba(255,255,255,0.15); }
+    .top-banner svg { flex-shrink: 0; }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-lt) 100%);
+      color: #fff;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    header h1 { font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.5px; }
+    header p  { margin-top: 8px; opacity: 0.85; font-size: 1rem; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.35);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      margin-top: 12px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── SEARCH ── */
+    .search-wrap {
+      max-width: 680px;
+      margin: -24px auto 0;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .search-box svg { margin-left: 16px; color: var(--muted); flex-shrink: 0; }
+    #searchInput {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 16px 14px;
+      font-size: 1rem;
+      color: var(--text);
+      background: transparent;
+    }
+    #clearBtn {
+      background: none; border: none; cursor: pointer;
+      padding: 0 14px; color: var(--muted); font-size: 1.2rem;
+      display: none;
+    }
+    #searchCount {
+      font-size: 0.8rem; color: var(--muted);
+      padding: 0 14px; white-space: nowrap;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 820px;
+      margin: 40px auto 60px;
+      padding: 0 16px;
+    }
+
+    /* ── SECTION CARDS ── */
+    .section-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .section-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.08); }
+    .section-card.hidden { display: none; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 22px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card-header:hover { background: var(--accent); }
+
+    .para-badge {
+      background: var(--blue);
+      color: #fff;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .card-header h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      flex: 1;
+    }
+    .chevron {
+      color: var(--muted);
+      transition: transform 0.25s;
+      flex-shrink: 0;
+    }
+    .open .chevron { transform: rotate(180deg); }
+
+    .card-body {
+      display: none;
+      padding: 0 22px 22px;
+      border-top: 1px solid var(--border);
+    }
+    .card-body.open { display: block; }
+    .card-body p, .card-body li { font-size: 0.97rem; color: #333; }
+    .card-body p + p { margin-top: 10px; }
+    .card-body ul, .card-body ol {
+      padding-left: 22px;
+      margin-top: 10px;
+    }
+    .card-body li { margin-bottom: 6px; }
+    .card-body h3 {
+      font-size: 0.93rem;
+      font-weight: 700;
+      color: var(--blue);
+      margin: 18px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    mark {
+      background: #fef08a;
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
+    /* ── FACT BOX ── */
+    .factbox {
+      background: #fff;
+      border-radius: 16px;
+      border: 2px solid var(--blue);
+      padding: 30px 28px 28px;
+      margin-top: 48px;
+    }
+    .factbox-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--blue);
+      margin-bottom: 20px;
+    }
+    .fact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .fact-item {
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .fact-item.warn  { background: var(--warn-lt);  border-left: 4px solid var(--warn); }
+    .fact-item.green { background: var(--green-lt); border-left: 4px solid #16a34a; }
+    .fact-item.red   { background: var(--red-lt);   border-left: 4px solid #dc2626; }
+    .fact-item.blue  { background: var(--accent);   border-left: 4px solid var(--blue); }
+
+    .fact-icon { font-size: 1.4rem; flex-shrink: 0; line-height: 1; }
+    .fact-item strong { display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 3px; }
+    .fact-item p { font-size: 0.83rem; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 28px 16px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--blue-lt); }
+
+    /* ── NO RESULTS ── */
+    #noResults {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    #noResults svg { opacity: 0.3; margin-bottom: 12px; }
+    #noResults p { font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1a6 6 0 1 1 0 12A6 6 0 0 1 8 2zm-.5 4.5h1v4h-1V6.5zm0 5h1v1h-1v-1z"/>
+  </svg>
+  Gjeldende fra 01.08.2024 &nbsp;·&nbsp; FOR-2024-06-19-1404
+  <a href="https://lovdata.no/dokument/LF/forskrift/2024-06-19-1404" target="_blank" rel="noopener">
+    Les original på Lovdata ↗
+  </a>
+</div>
+
+<!-- HEADER -->
+<header>
+  <h1>Skoleregler for videregående skoler i Østfold</h1>
+  <p>Forskrift vedtatt av Østfold fylkeskommune – lettlest versjon</p>
+  <span class="badge">Sist endret: FOR-2025-06-18-1384</span>
+</header>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-box">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input id="searchInput" type="search" placeholder="Søk i skolereglementet …" autocomplete="off" />
+    <span id="searchCount"></span>
+    <button id="clearBtn" aria-label="Tøm søk">✕</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main id="content">
+
+  <!-- § 1 -->
+  <article class="section-card" data-section="1">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 1</span>
+      <h2>Hensikten med skolereglene</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Skolereglene skal legge grunnlaget for et <strong>trygt, godt og inkluderende skolemiljø</strong> for alle.</p>
+      <p>Reglene skal bidra til god helse, læring, trivsel, respekt og toleranse. De inneholder bestemmelser om:</p>
+      <ul>
+        <li>Organisering av skoledemokratiet</li>
+        <li>Rettigheter og plikter for elever</li>
+        <li>Orden og atferd</li>
+        <li>Hva som skjer dersom reglene brytes</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 2 -->
+  <article class="section-card" data-section="2">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 2</span>
+      <h2>Hvem skolereglene gjelder for</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Reglene gjelder for <strong>alle elever ved de offentlige videregående skolene i Østfold fylkeskommune</strong>, inkludert:</p>
+      <ul>
+        <li>Forberedende opplæring for voksne (16–19 år)</li>
+        <li>OT-klasser (oppfølgingstjenesten)</li>
+        <li>Elever fra kommunale grunnskoler der det er aktuelt</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 3 -->
+  <article class="section-card" data-section="3">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 3</span>
+      <h2>Hvor og når skolereglene gjelder</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Reglene gjelder:</p>
+      <ul>
+        <li>På skolen i skoletiden</li>
+        <li>På skolevei og under transport til/fra skoleaktiviteter</li>
+        <li>Under skole­arrangerte aktiviteter og turer</li>
+        <li>På alternative læringsarenaer</li>
+        <li>Utenfor skoletiden dersom atferden <strong>påvirker skolemiljøet</strong> eller forholdet til ansatte eller medelever</li>
+        <li>All bruk av skolens digitale infrastruktur og <strong>annen digital kommunikasjon</strong> som berører skolen</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 4 -->
+  <article class="section-card" data-section="4">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 4</span>
+      <h2>Rettigheter</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Alle elever har rett til:</p>
+      <ul>
+        <li>Opplæring etter gjeldende lover og forskrifter</li>
+        <li>Tilpasset opplæring ut fra egne evner og forutsetninger</li>
+        <li>Nødvendige pauser i løpet av skoledagen</li>
+        <li>Et <strong>trygt, godt og inkluderende skolemiljø</strong></li>
+        <li>Å delta i skoledemokratiet og skoleaktiviteter</li>
+      </ul>
+      <p>Skolen har plikt til å legge til rette for at elevene kan bruke disse rettighetene.</p>
+    </div>
+  </article>
+
+  <!-- § 5 -->
+  <article class="section-card" data-section="5">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 5</span>
+      <h2>Organisering av skoledemokratiet</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <h3>Elevråd</h3>
+      <p>Alle videregående skoler skal ha et <strong>elevråd</strong> som velges av elevene. Elevrådet er et rådgivende organ – det har ikke vedtaksmyndighet. Skolen skal ha en kontaktperson for elevrådet.</p>
+
+      <h3>Skoleutvalg</h3>
+      <p>Alle skoler skal ha et <strong>skoleutvalg</strong> med rektor og representanter fra elever (i flertall) og ansatte. Skoleutvalget er et rådgivende organ.</p>
+
+      <h3>Elevrepresentasjon i fylket</h3>
+      <p>Elevrepresentanter har møte- og talerett i relevante fylkeskommunale utvalg.</p>
+    </div>
+  </article>
+
+  <!-- § 6 -->
+  <article class="section-card" data-section="6">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 6</span>
+      <h2>Plikter</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Elevene skal:</p>
+      <ul>
+        <li>Bidra til at skolemiljøet er <strong>trygt, godt og inkluderende</strong></li>
+        <li>Opptre hensynsfullt og høflig</li>
+        <li>Følge skolereglene og gjeldende lover</li>
+        <li>Møte til opplæring og delta aktivt</li>
+        <li>Respektere og følge instrukser fra ansatte</li>
+        <li><strong>Legge bort mobiltelefonen og sette den på lydløs</strong> under undervisning, med mindre læreren eksplisitt tillater bruk</li>
+        <li>Slå av telefonen eller sette den i flymodus ved særskilte vurderingssituasjoner</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 7 -->
+  <article class="section-card" data-section="7">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 7</span>
+      <h2>Nærvær og fravær</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Elevene har <strong>møteplikt</strong> til all opplæring, med mindre annet er avtalt med skolen.</p>
+      <ul>
+        <li>Forsinkelse på <strong>mer enn 15 minutter</strong> regnes som fravær for hele timen</li>
+        <li>Fravær føres i dager og enkelt-timer</li>
+        <li>Fraværet vises på vitnemålet</li>
+        <li>For mye fravær kan føre til at eleven ikke får halvårsvurdering med karakter</li>
+        <li>Fravær som skyldes forhold eleven ikke kan påvirke (f.eks. forsinkelse i kollektivtrafikken), kan rektor beslutte å ikke føre som fravær</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 8 -->
+  <article class="section-card" data-section="8">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 8</span>
+      <h2>Orden</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>For å få god ordenskarakter skal elevene:</p>
+      <ul>
+        <li>Møte presis og forberedt til alle timer</li>
+        <li>Delta aktivt og levere arbeid innen frister</li>
+        <li>Sette seg inn i fagstoff de har gått glipp av</li>
+        <li>Ha med nødvendig utstyr</li>
+        <li>Holde arbeidsplassen i orden</li>
+        <li>Legge mobilen på lydløs og bort</li>
+        <li>Melde fra til skolen umiddelbart ved fravær</li>
+        <li>Gi ny melding dersom fraværet varer mer enn tre dager</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 9 -->
+  <article class="section-card" data-section="9">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 9</span>
+      <h2>Oppførsel</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Elevene skal følge god atferd og vise respekt. Det er blant annet <strong>forbudt</strong> å:</p>
+      <ul>
+        <li>Jukse – inkludert ulovlig bruk av KI/AI eller plagiat</li>
+        <li>Bruke vold, grovt språk, true eller mobbe noen</li>
+        <li>Fotografere eller filme andre uten tillatelse</li>
+        <li>Bruke tobakk, snus eller e-sigaretter på skolen</li>
+        <li>Ha med eller spre pornografisk, rasistisk eller ulovlig materiale</li>
+        <li>Ha med våpen eller farlige gjenstander</li>
+        <li>Ha med, bruke eller selge narkotika</li>
+        <li>Bruke plagg som hindrer kommunikasjon eller identifikasjon under undervisning eller vurdering</li>
+      </ul>
+      <p>Elevene plikter å delta i HMS-arbeid og bruke påkrevd verneutstyr, samt kjenne brannvernreglene.</p>
+    </div>
+  </article>
+
+  <!-- § 10 -->
+  <article class="section-card" data-section="10">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 10</span>
+      <h2>Tiltak og reaksjoner</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Ved brudd på skolereglene kan skolen iverksette følgende tiltak:</p>
+      <ol type="a">
+        <li>Innkalling til samtale</li>
+        <li>Kontakt med skolens rådgivningstjeneste</li>
+        <li>Irettesettelse/advarsel</li>
+        <li>Inndragning av mobiltelefon (<strong>inntil to timer</strong>)</li>
+        <li>Inndragning av ulovlige gjenstander</li>
+        <li>Krav om erstatning/utbedring av skade</li>
+        <li>Pålagt fremmøte utenom ordinær skoletid</li>
+        <li>Bytte av klasse eller gruppe</li>
+        <li>Nedsatt atferdskarakter</li>
+        <li>Bortvising fra time eller resten av skoledagen</li>
+        <li>Bortvising i inntil fem dager</li>
+        <li>Bortvising fra skoleturer</li>
+        <li>Tvungen skolebytte</li>
+        <li>Utvisning fra opplæring for resten av opplæringsåret</li>
+      </ol>
+      <p style="margin-top:12px; color: var(--muted); font-size:0.9rem;">Tiltakene l–n i listen ovenfor regnes som enkeltvedtak og følger reglene i forvaltningsloven.</p>
+    </div>
+  </article>
+
+  <!-- § 11 -->
+  <article class="section-card" data-section="11">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 11</span>
+      <h2>Rettigheter og plikter ved bruk av tiltak og reaksjoner</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li>Tiltak skal stå i <strong>rimelig forhold</strong> til regelbruddets alvorlighet</li>
+        <li>Reaksjoner skal ha vært kjent for elevene på forhånd</li>
+        <li>Hele grupper kan <strong>ikke</strong> straffes for enkeltelevers handlinger</li>
+        <li>Tiltak bør følge regelbruddene raskt</li>
+        <li>Eleven har rett til å bli <strong>hørt</strong> før vedtak fattes</li>
+        <li>Manglende etterlevelse av tiltak kan medføre ytterligere reaksjoner</li>
+      </ul>
+      <p>Ved alvorlige tiltak (§ 10 l–n) gjelder forvaltningslovens krav: forhåndsvarsel, begrunnelse, klageinformasjon og vurdering av om mildere tiltak er mulig.</p>
+    </div>
+  </article>
+
+  <!-- § 12 -->
+  <article class="section-card" data-section="12">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 12</span>
+      <h2>Erstatning og politianmeldelse</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>I tillegg til skolens egne tiltak kan elever eller foresatte bli holdt <strong>erstatningsansvarlig</strong> etter alminnelig erstatningsrett.</p>
+      <p>Rektor vil normalt <strong>anmelde kriminelle handlinger</strong> til politiet.</p>
+    </div>
+  </article>
+
+  <!-- § 13 -->
+  <article class="section-card" data-section="13">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 13</span>
+      <h2>Lokale, utfyllende regler</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Disse er <strong>felles regler</strong> for alle Østfold-skoler. Den enkelte skole kan i tillegg lage lokale regler som utfyller denne forskriften.</p>
+      <ul>
+        <li>Elever skal delta i utarbeidelsen av lokale regler</li>
+        <li>Lokale regler må godkjennes av direktøren for opplæringsavdelingen</li>
+        <li>Lokale regler skal publiseres på skolens nettside</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- § 14 -->
+  <article class="section-card" data-section="14">
+    <div class="card-header" onclick="toggle(this)">
+      <span class="para-badge">§ 14</span>
+      <h2>Endringer i forskriften</h2>
+      <svg class="chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="card-body">
+      <p>Endringer i forskriften som følger av endringer i lov eller overordnede forskrifter, gjennomføres av direktøren for opplæringsavdelingen. Det samme gjelder mindre korrigeringer som ikke har vesentlig betydning for innholdet.</p>
+    </div>
+  </article>
+
+  <!-- NO RESULTS -->
+  <div id="noResults">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <p>Ingen resultater for søket ditt. Prøv et annet ord.</p>
+  </div>
+
+  <!-- FACT BOX -->
+  <section class="factbox" id="factbox">
+    <div class="factbox-title">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      Viktigste regler – kort oppsummert
+    </div>
+    <div class="fact-grid">
+      <div class="fact-item warn">
+        <span class="fact-icon">📵</span>
+        <div>
+          <strong>Mobil på lydløs</strong>
+          <p>Telefonen skal være lagt bort og på lydløs i alle timer med mindre læreren tillater noe annet.</p>
+        </div>
+      </div>
+      <div class="fact-item warn">
+        <span class="fact-icon">⏰</span>
+        <div>
+          <strong>15-minuttersregelen</strong>
+          <p>Kommer du mer enn 15 minutter for sent, føres hele timen som fravær.</p>
+        </div>
+      </div>
+      <div class="fact-item red">
+        <span class="fact-icon">🚫</span>
+        <div>
+          <strong>Juks – inkl. ulovlig KI-bruk</strong>
+          <p>Juks, plagiat og uautorisert bruk av kunstig intelligens er forbudt og kan gi strenge konsekvenser.</p>
+        </div>
+      </div>
+      <div class="fact-item red">
+        <span class="fact-icon">🚬</span>
+        <div>
+          <strong>Røykeforbud</strong>
+          <p>Tobakk, snus og e-sigaretter er ikke tillatt på skolen.</p>
+        </div>
+      </div>
+      <div class="fact-item red">
+        <span class="fact-icon">⚠️</span>
+        <div>
+          <strong>Vold og mobbing</strong>
+          <p>Vold, trusler, mobbing og grovt språk er strengt forbudt. Kriminelle handlinger anmeldes til politiet.</p>
+        </div>
+      </div>
+      <div class="fact-item green">
+        <span class="fact-icon">🗳️</span>
+        <div>
+          <strong>Din stemme teller</strong>
+          <p>Du har rett til å delta i elevråd og skoleutvalg. Elevene har flertall i skoleutvalget.</p>
+        </div>
+      </div>
+      <div class="fact-item green">
+        <span class="fact-icon">✅</span>
+        <div>
+          <strong>Tilpasset opplæring</strong>
+          <p>Du har rett til opplæring tilpasset dine evner og forutsetninger.</p>
+        </div>
+      </div>
+      <div class="fact-item blue">
+        <span class="fact-icon">📋</span>
+        <div>
+          <strong>Rett til å bli hørt</strong>
+          <p>Før skolen fatter vedtak mot deg, har du alltid rett til å legge frem din side av saken.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Lettlest versjon av <a href="https://lovdata.no/dokument/LF/forskrift/2024-06-19-1404" target="_blank" rel="noopener">FOR-2024-06-19-1404</a> –
+  Forskrift om skoleregler for de offentlige videregående skolene, Østfold fylkeskommune.
+  Gjeldende fra 01.08.2024.
+</footer>
+
+<script>
+  // ── ACCORDION ──
+  function toggle(header) {
+    const card = header.parentElement;
+    const body = card.querySelector('.card-body');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    header.classList.toggle('open', !isOpen);
+  }
+
+  // Open first card by default
+  document.querySelector('.card-header').click();
+
+  // ── SEARCH ──
+  const input    = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+  const countEl  = document.getElementById('searchCount');
+  const noRes    = document.getElementById('noResults');
+  const factbox  = document.getElementById('factbox');
+  const cards    = document.querySelectorAll('.section-card');
+
+  function escapeRe(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function highlight(node, re) {
+    if (node.nodeType === 3) {
+      const text = node.textContent;
+      if (!re.test(text)) return;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      text.replace(re, (m, offset) => {
+        frag.appendChild(document.createTextNode(text.slice(last, offset)));
+        const mark = document.createElement('mark');
+        mark.textContent = m;
+        frag.appendChild(mark);
+        last = offset + m.length;
+      });
+      frag.appendChild(document.createTextNode(text.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    } else if (node.nodeType === 1 && node.nodeName !== 'MARK') {
+      Array.from(node.childNodes).forEach(c => highlight(c, re));
+    }
+  }
+
+  function clearHighlights(el) {
+    el.querySelectorAll('mark').forEach(m => {
+      m.replaceWith(document.createTextNode(m.textContent));
+    });
+    el.normalize();
+  }
+
+  function doSearch() {
+    const q = input.value.trim();
+    clearBtn.style.display = q ? 'block' : 'none';
+
+    cards.forEach(card => {
+      clearHighlights(card);
+      card.classList.remove('hidden');
+      card.querySelector('.card-body').classList.remove('open');
+      card.querySelector('.card-header').classList.remove('open');
+    });
+
+    if (!q) {
+      countEl.textContent = '';
+      noRes.style.display = 'none';
+      factbox.style.display = '';
+      document.querySelector('.card-header').click();
+      return;
+    }
+
+    const re = new RegExp(escapeRe(q), 'gi');
+    let found = 0;
+
+    cards.forEach(card => {
+      const text = card.textContent;
+      if (re.test(text)) {
+        found++;
+        highlight(card, new RegExp(escapeRe(q), 'gi'));
+        card.querySelector('.card-body').classList.add('open');
+        card.querySelector('.card-header').classList.add('open');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    countEl.textContent = found > 0 ? `${found} treff` : '';
+    noRes.style.display  = found === 0 ? 'flex' : 'none';
+    noRes.style.flexDirection = 'column';
+    noRes.style.alignItems = 'center';
+    factbox.style.display = found === 0 ? 'none' : '';
+  }
+
+  input.addEventListener('input', doSearch);
+  clearBtn.addEventListener('click', () => { input.value = ''; doSearch(); input.focus(); });
+</script>
+</body>
+</html>
