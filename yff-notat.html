@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>YFF – Samtalenotat</title>
+  <style>
+    :root {
+      --blue:    #1a56db;
+      --blue-lt: #e8f0fe;
+      --green:   #0e9f6e;
+      --green-lt:#d5f5e9;
+      --red:     #e02424;
+      --red-lt:  #fde8e8;
+      --gray:    #6b7280;
+      --bg:      #f3f4f6;
+      --white:   #ffffff;
+      --border:  #d1d5db;
+      --text:    #111827;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    header {
+      background: var(--blue);
+      color: #fff;
+      padding: 14px 16px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+    header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: .3px; }
+    header p  { font-size: .78rem; opacity: .85; margin-top: 2px; }
+
+    #autosave-status {
+      font-size: .72rem;
+      opacity: .8;
+      margin-top: 3px;
+      min-height: 1em;
+      transition: opacity .4s;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 12px 12px 100px;
+    }
+
+    /* ── STUDENT LIST ── */
+    #student-panel { margin-bottom: 8px; }
+
+    .panel-title {
+      font-size: .75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--gray);
+      margin-bottom: 6px;
+      padding-left: 2px;
+    }
+
+    #student-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .student-item {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color .15s, box-shadow .15s;
+      user-select: none;
+    }
+    .student-item:active  { background: var(--blue-lt); }
+    .student-item.active  {
+      border-color: var(--blue);
+      background: var(--blue-lt);
+      box-shadow: 0 0 0 2px rgba(26,86,219,.2);
+    }
+    .student-item .s-name  { font-weight: 600; font-size: .95rem; }
+    .student-item .s-meta  { font-size: .78rem; color: var(--gray); margin-top: 1px; }
+    .student-item .s-date  { font-size: .72rem; color: var(--gray); white-space: nowrap; }
+
+    .student-item .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--gray);
+      font-size: 1.1rem;
+      padding: 4px 6px;
+      border-radius: 6px;
+      line-height: 1;
+      flex-shrink: 0;
+      touch-action: manipulation;
+    }
+    .student-item .delete-btn:active { color: var(--red); background: var(--red-lt); }
+
+    #btn-new-student {
+      margin-top: 8px;
+      width: 100%;
+      padding: 11px;
+      border: 2px dashed var(--blue);
+      background: transparent;
+      color: var(--blue);
+      font-weight: 600;
+      font-size: .95rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+      touch-action: manipulation;
+    }
+    #btn-new-student:active { background: var(--blue-lt); }
+
+    /* ── FORM AREA ── */
+    #form-area {
+      display: none;
+      background: var(--white);
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .form-header {
+      background: var(--blue);
+      color: #fff;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .form-header span { font-weight: 700; font-size: 1rem; }
+    #btn-close-form {
+      background: rgba(255,255,255,.2);
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    #btn-close-form:active { background: rgba(255,255,255,.35); }
+
+    /* ── SECTION CARDS ── */
+    .section {
+      padding: 14px 14px 0;
+    }
+    .section:last-of-type { padding-bottom: 14px; }
+
+    .section-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--blue);
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid var(--blue-lt);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 14px;
+    }
+
+    /* ── FORM FIELDS ── */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--text);
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,86,219,.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+    }
+    textarea.tall { min-height: 110px; }
+
+    /* Two-column grid for short fields */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .field-row .field { margin-bottom: 0; }
+
+    /* ── VURDERING (rating) ── */
+    .rating-group { margin-bottom: 14px; }
+    .rating-group label { margin-bottom: 6px; }
+    .rating-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .rating-btns button {
+      flex: 1;
+      padding: 9px 4px;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      border-radius: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      touch-action: manipulation;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .rating-btns button.sel-1 { background: #fde8e8; border-color: var(--red);   color: var(--red);   }
+    .rating-btns button.sel-2 { background: #fff3cd; border-color: #b45309;       color: #92400e;      }
+    .rating-btns button.sel-3 { background: #d5f5e9; border-color: var(--green);  color: var(--green); }
+    .rating-btns button.sel-4 { background: var(--blue-lt); border-color: var(--blue); color: var(--blue); }
+
+    /* ── CHECKBOX LIST ── */
+    .check-list { display: flex; flex-direction: column; gap: 6px; }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .12s, border-color .12s;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    .check-item.checked { background: var(--green-lt); border-color: var(--green); }
+    .check-item input[type="checkbox"] { display: none; }
+    .check-icon {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .9rem;
+      transition: all .12s;
+    }
+    .check-item.checked .check-icon { background: var(--green); border-color: var(--green); color: #fff; }
+    .check-item .check-text { font-size: .9rem; font-weight: 500; }
+
+    /* ── ACTION BUTTONS ── */
+    .form-actions {
+      padding: 14px;
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 13px 8px;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { opacity: .85; transform: scale(.98); }
+
+    .btn-primary  { background: var(--blue);  color: #fff; }
+    .btn-success  { background: var(--green); color: #fff; }
+    .btn-export   { background: #6b7280;      color: #fff; }
+
+    /* ── EXPORT PREVIEW ── */
+    #export-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 200;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    #export-modal.open { display: flex; align-items: flex-start; justify-content: center; }
+    #export-box {
+      background: var(--white);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      overflow: hidden;
+      margin: auto;
+    }
+    #export-box header {
+      background: var(--blue);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    #export-box header button {
+      background: rgba(255,255,255,.2);
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #export-content {
+      padding: 14px;
+      white-space: pre-wrap;
+      font-family: "Courier New", monospace;
+      font-size: .82rem;
+      line-height: 1.6;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    #export-copy-btn {
+      display: block;
+      width: calc(100% - 28px);
+      margin: 14px;
+      padding: 12px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1f2937;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: .88rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 300;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--gray);
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .empty-state p { font-size: .9rem; line-height: 1.5; }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:     #111827;
+        --white:  #1f2937;
+        --border: #374151;
+        --text:   #f9fafb;
+        --gray:   #9ca3af;
+        --blue-lt: #1e3a5f;
+        --green-lt:#065f46;
+        --red-lt: #7f1d1d;
+      }
+      textarea, input, select { background: #1f2937; color: #f9fafb; }
+      .form-actions { background: #111827; }
+      .check-icon { background: #374151; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>YFF – Samtalenotat</h1>
+  <p>Besøkslogg for arbeidsplasssamtaler</p>
+  <div id="autosave-status"></div>
+</header>
+
+<main>
+  <!-- Student list panel -->
+  <div id="student-panel">
+    <div class="panel-title">Elever</div>
+    <div id="student-list">
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <p>Ingen elever registrert ennå.<br>Trykk «+ Ny elev» for å starte.</p>
+      </div>
+    </div>
+    <button id="btn-new-student">+ Ny elev</button>
+  </div>
+
+  <!-- Form area (shown when editing/creating) -->
+  <div id="form-area">
+    <div class="form-header">
+      <span id="form-title">Nytt notat</span>
+      <button id="btn-close-form" title="Lukk">✕</button>
+    </div>
+
+    <!-- ELEV OG BESØK -->
+    <div class="section">
+      <div class="section-label">Elev og besøk</div>
+
+      <div class="field">
+        <label for="f-elev-navn">Elevens navn *</label>
+        <input type="text" id="f-elev-navn" placeholder="Fornavn Etternavn" autocomplete="off">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-klasse">Klasse / gruppe</label>
+          <input type="text" id="f-klasse" placeholder="f.eks. 1STA">
+        </div>
+        <div class="field">
+          <label for="f-dato">Dato for besøk</label>
+          <input type="date" id="f-dato">
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ARBEIDSPLASS -->
+    <div class="section">
+      <div class="section-label">Arbeidsplass</div>
+
+      <div class="field">
+        <label for="f-bedrift">Bedrift / arbeidsgiver</label>
+        <input type="text" id="f-bedrift" placeholder="Bedriftsnavn">
+      </div>
+      <div class="field">
+        <label for="f-kontaktperson">Kontaktperson</label>
+        <input type="text" id="f-kontaktperson" placeholder="Navn på veileder / instruktør">
+      </div>
+      <div class="field">
+        <label for="f-stilling">Stilling / avdeling</label>
+        <input type="text" id="f-stilling" placeholder="f.eks. Fagarbeider, lager">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SAMTALEN -->
+    <div class="section">
+      <div class="section-label">Temaer i samtalen</div>
+
+      <div class="check-list" id="tema-liste">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="field" style="margin-top:12px;">
+        <label for="f-andre-temaer">Andre temaer / notater fra samtalen</label>
+        <textarea id="f-andre-temaer" class="tall" placeholder="Skriv fritt ..."></textarea>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- VURDERING AV ELEV -->
+    <div class="section">
+      <div class="section-label">Vurdering av elev</div>
+
+      <div id="vurdering-gruppe">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="field">
+        <label for="f-vurdering-notat">Utfyllende kommentar til vurdering</label>
+        <textarea id="f-vurdering-notat" placeholder="Beskriv hva eleven gjør bra, hva som kan forbedres ..."></textarea>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- KOMPETANSEMÅL -->
+    <div class="section">
+      <div class="section-label">Kompetansemål og faglig utbytte</div>
+
+      <div class="field">
+        <label for="f-kompetansemaal">Aktuelle kompetansemål fra læreplanen</label>
+        <textarea id="f-kompetansemaal" placeholder="Hvilke mål jobber eleven mot? ..."></textarea>
+      </div>
+      <div class="field">
+        <label for="f-faglig-utbytte">Elevens faglige utbytte av praksisperioden</label>
+        <textarea id="f-faglig-utbytte" placeholder="Hva har eleven lært? ..."></textarea>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- TILBAKEMELDING FRA ARBEIDSGIVER -->
+    <div class="section">
+      <div class="section-label">Tilbakemelding fra arbeidsgiver</div>
+
+      <div class="field">
+        <label for="f-ag-positiv">Positive observasjoner</label>
+        <textarea id="f-ag-positiv" placeholder="Hva trekker arbeidsgiver frem som positivt? ..."></textarea>
+      </div>
+      <div class="field">
+        <label for="f-ag-utfordring">Utfordringer / utviklingsområder</label>
+        <textarea id="f-ag-utfordring" placeholder="Hva kan eleven jobbe mer med? ..."></textarea>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- OPPFØLGING -->
+    <div class="section">
+      <div class="section-label">Oppfølging og neste steg</div>
+
+      <div class="field">
+        <label for="f-tiltak">Tiltak / avtaler som ble gjort</label>
+        <textarea id="f-tiltak" placeholder="Hva ble avtalt videre? ..."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-neste-besok">Neste planlagte besøk</label>
+          <input type="date" id="f-neste-besok">
+        </div>
+        <div class="field">
+          <label for="f-kontakt-info">Kontaktinfo arbeidsgiver</label>
+          <input type="text" id="f-kontakt-info" placeholder="Tlf / e-post">
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- EGET NOTAT (LÆRER) -->
+    <div class="section">
+      <div class="section-label">Eget notat (kun til deg)</div>
+
+      <div class="field">
+        <label for="f-eget-notat">Interne merknader / huskeliste</label>
+        <textarea id="f-eget-notat" class="tall" placeholder="Notater du ikke vil dele med andre ..."></textarea>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="form-actions">
+      <button class="btn btn-success" id="btn-save">Lagre</button>
+      <button class="btn btn-export" id="btn-export">Eksporter</button>
+    </div>
+  </div>
+</main>
+
+<!-- Export modal -->
+<div id="export-modal">
+  <div id="export-box">
+    <header>
+      <span>Eksporter notat</span>
+      <button id="btn-close-export">✕</button>
+    </header>
+    <pre id="export-content"></pre>
+    <button id="export-copy-btn">Kopier tekst</button>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast"></div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const STORE_KEY = 'yff_elever_v2';
+
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+function saveAll(elever) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(elever));
+}
+
+// ── TEMA-CHECKBOXER ─────────────────────────────────────────────────────────
+const TEMAER = [
+  'Trivsel og arbeidsmiljø',
+  'Faglig innhold og oppgaver',
+  'Orden og atferd',
+  'Sikkerhet / HMS',
+  'Samarbeid og kommunikasjon',
+  'Fremmøte og punktlighet',
+  'Fremtidsplaner / yrkesvei',
+  'Karakterer og standpunkt',
+  'Spesielle behov / tilrettelegging',
+];
+
+const VURDERINGER = [
+  { id: 'innsats',        label: 'Innsats og motivasjon' },
+  { id: 'faglig',         label: 'Faglig dyktighet' },
+  { id: 'orden',          label: 'Orden og ryddighet' },
+  { id: 'atferd',         label: 'Atferd og sosiale ferdigheter' },
+  { id: 'selvstendighet', label: 'Selvstendighet' },
+  { id: 'samarbeid',      label: 'Samarbeid' },
+];
+
+const RATING_LABELS = ['Lav', 'Under middels', 'Over middels', 'Høy'];
+
+function buildTemaList() {
+  const el = document.getElementById('tema-liste');
+  el.innerHTML = TEMAER.map((t, i) => `
+    <label class="check-item" data-idx="${i}" onclick="toggleTema(this)">
+      <input type="checkbox" data-tema="${t}">
+      <div class="check-icon">✓</div>
+      <span class="check-text">${t}</span>
+    </label>`).join('');
+}
+
+function toggleTema(el) {
+  const cb = el.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  el.classList.toggle('checked', cb.checked);
+  triggerAutosave();
+}
+
+function buildVurderingGroup() {
+  const el = document.getElementById('vurdering-gruppe');
+  el.innerHTML = VURDERINGER.map(v => `
+    <div class="rating-group">
+      <label>${v.label}</label>
+      <div class="rating-btns" data-id="${v.id}">
+        ${RATING_LABELS.map((lbl, i) => `<button type="button" data-val="${i+1}" onclick="selectRating(this)">${lbl}</button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selectRating(btn) {
+  const group = btn.closest('.rating-btns');
+  group.querySelectorAll('button').forEach(b => b.className = '');
+  btn.className = `sel-${btn.dataset.val}`;
+  triggerAutosave();
+}
+
+// ── CURRENT STATE ────────────────────────────────────────────────────────────
+let currentId = null;  // null = new record
+let autosaveTimer = null;
+let isDirty = false;
+
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+// ── READ / WRITE FORM ────────────────────────────────────────────────────────
+function readForm() {
+  const temaer = [];
+  document.querySelectorAll('#tema-liste .check-item.checked input[type=checkbox]')
+    .forEach(cb => temaer.push(cb.dataset.tema));
+
+  const vurderinger = {};
+  document.querySelectorAll('#vurdering-gruppe .rating-btns').forEach(group => {
+    const sel = group.querySelector('button[class^="sel-"]');
+    vurderinger[group.dataset.id] = sel ? parseInt(sel.dataset.val) : null;
+  });
+
+  return {
+    elevNavn:        val('f-elev-navn'),
+    klasse:          val('f-klasse'),
+    dato:            val('f-dato'),
+    bedrift:         val('f-bedrift'),
+    kontaktperson:   val('f-kontaktperson'),
+    stilling:        val('f-stilling'),
+    temaer,
+    andreTemaer:     val('f-andre-temaer'),
+    vurderinger,
+    vurderingNotat:  val('f-vurdering-notat'),
+    kompetansemaal:  val('f-kompetansemaal'),
+    fagligUtbytte:   val('f-faglig-utbytte'),
+    agPositiv:       val('f-ag-positiv'),
+    agUtfordring:    val('f-ag-utfordring'),
+    tiltak:          val('f-tiltak'),
+    nesteBesok:      val('f-neste-besok'),
+    kontaktInfo:     val('f-kontakt-info'),
+    egetNotat:       val('f-eget-notat'),
+  };
+}
+
+function writeForm(data) {
+  set('f-elev-navn',       data.elevNavn        || '');
+  set('f-klasse',          data.klasse          || '');
+  set('f-dato',            data.dato            || '');
+  set('f-bedrift',         data.bedrift         || '');
+  set('f-kontaktperson',   data.kontaktperson   || '');
+  set('f-stilling',        data.stilling        || '');
+  set('f-andre-temaer',    data.andreTemaer     || '');
+  set('f-vurdering-notat', data.vurderingNotat  || '');
+  set('f-kompetansemaal',  data.kompetansemaal  || '');
+  set('f-faglig-utbytte',  data.fagligUtbytte   || '');
+  set('f-ag-positiv',      data.agPositiv       || '');
+  set('f-ag-utfordring',   data.agUtfordring    || '');
+  set('f-tiltak',          data.tiltak          || '');
+  set('f-neste-besok',     data.nesteBesok      || '');
+  set('f-kontakt-info',    data.kontaktInfo     || '');
+  set('f-eget-notat',      data.egetNotat       || '');
+
+  // temaer checkboxes
+  document.querySelectorAll('#tema-liste .check-item').forEach(item => {
+    const cb = item.querySelector('input[type=checkbox]');
+    const checked = (data.temaer || []).includes(cb.dataset.tema);
+    cb.checked = checked;
+    item.classList.toggle('checked', checked);
+  });
+
+  // vurderinger ratings
+  document.querySelectorAll('#vurdering-gruppe .rating-btns').forEach(group => {
+    const val = (data.vurderinger || {})[group.dataset.id];
+    group.querySelectorAll('button').forEach(b => {
+      b.className = (val && parseInt(b.dataset.val) === val) ? `sel-${val}` : '';
+    });
+  });
+}
+
+function val(id) { return document.getElementById(id).value.trim(); }
+function set(id, v) { document.getElementById(id).value = v; }
+
+// ── AUTOSAVE ──────────────────────────────────────────────────────────────────
+function triggerAutosave() {
+  isDirty = true;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(doAutosave, 1500);
+  setStatus('Redigerer...');
+}
+
+function doAutosave() {
+  if (!isDirty) return;
+  const data = readForm();
+  if (!data.elevNavn) return;   // don't save empty name
+  const elever = loadAll();
+  const ts = new Date().toISOString();
+  if (currentId) {
+    const idx = elever.findIndex(e => e.id === currentId);
+    if (idx > -1) { elever[idx] = { ...elever[idx], ...data, oppdatert: ts }; }
+    else { elever.push({ id: currentId, ...data, opprettet: ts, oppdatert: ts }); }
+  } else {
+    currentId = newId();
+    elever.push({ id: currentId, ...data, opprettet: ts, oppdatert: ts });
+  }
+  saveAll(elever);
+  isDirty = false;
+  renderStudentList();
+  setStatus('Lagret automatisk ✓');
+  setTimeout(() => setStatus(''), 3000);
+}
+
+function setStatus(msg) {
+  document.getElementById('autosave-status').textContent = msg;
+}
+
+// ── RENDER STUDENT LIST ───────────────────────────────────────────────────────
+function renderStudentList() {
+  const elever = loadAll();
+  const list = document.getElementById('student-list');
+
+  if (!elever.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>Ingen elever registrert ennå.<br>Trykk «+ Ny elev» for å starte.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = elever.slice().sort((a,b) => (a.elevNavn||'').localeCompare(b.elevNavn||'')).map(e => {
+    const dato = e.dato ? new Date(e.dato).toLocaleDateString('no-NO', {day:'2-digit',month:'short',year:'numeric'}) : '';
+    const active = e.id === currentId ? 'active' : '';
+    return `
+    <div class="student-item ${active}" data-id="${e.id}" onclick="openStudent('${e.id}')">
+      <div>
+        <div class="s-name">${e.elevNavn || '(uten navn)'}</div>
+        <div class="s-meta">${[e.klasse, e.bedrift].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <div class="s-date">${dato}</div>
+        <button class="delete-btn" onclick="deleteStudent(event,'${e.id}')" title="Slett">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── OPEN / CLOSE FORM ─────────────────────────────────────────────────────────
+function openStudent(id) {
+  const elever = loadAll();
+  const e = elever.find(x => x.id === id);
+  if (!e) return;
+  currentId = id;
+  isDirty = false;
+  writeForm(e);
+  document.getElementById('form-title').textContent = e.elevNavn || 'Rediger notat';
+  showForm();
+  renderStudentList();
+}
+
+function openNew() {
+  currentId = null;
+  isDirty = false;
+  writeForm({});
+  document.getElementById('f-dato').value = today();
+  document.getElementById('form-title').textContent = 'Nytt notat';
+  showForm();
+}
+
+function showForm() {
+  document.getElementById('form-area').style.display = 'block';
+  document.getElementById('form-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeForm() {
+  if (isDirty) doAutosave();
+  document.getElementById('form-area').style.display = 'none';
+  currentId = null;
+  renderStudentList();
+}
+
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+// ── SAVE BUTTON ───────────────────────────────────────────────────────────────
+function saveNow() {
+  const data = readForm();
+  if (!data.elevNavn) { toast('Skriv inn elevens navn for å lagre.'); return; }
+  clearTimeout(autosaveTimer);
+  isDirty = true;
+  doAutosave();
+  document.getElementById('form-title').textContent = data.elevNavn;
+  toast('Notat lagret!');
+}
+
+// ── DELETE ─────────────────────────────────────────────────────────────────────
+function deleteStudent(evt, id) {
+  evt.stopPropagation();
+  const elever = loadAll();
+  const e = elever.find(x => x.id === id);
+  if (!confirm(`Slette notat for ${e?.elevNavn || 'denne eleven'}?`)) return;
+  saveAll(elever.filter(x => x.id !== id));
+  if (currentId === id) {
+    currentId = null;
+    document.getElementById('form-area').style.display = 'none';
+  }
+  renderStudentList();
+  toast('Notat slettet.');
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportNote() {
+  const data = readForm();
+  const ratingWord = v => v ? RATING_LABELS[v-1] : '–';
+  const ts = new Date().toLocaleString('no-NO');
+
+  let txt = `═══════════════════════════════════════
+YFF – SAMTALENOTAT
+Eksportert: ${ts}
+═══════════════════════════════════════
+
+ELEV OG BESØK
+─────────────────────────────────────
+Elev:            ${data.elevNavn || '–'}
+Klasse/gruppe:   ${data.klasse || '–'}
+Dato for besøk:  ${data.dato ? new Date(data.dato).toLocaleDateString('no-NO') : '–'}
+
+ARBEIDSPLASS
+─────────────────────────────────────
+Bedrift:         ${data.bedrift || '–'}
+Kontaktperson:   ${data.kontaktperson || '–'}
+Stilling/avd.:   ${data.stilling || '–'}
+
+TEMAER I SAMTALEN
+─────────────────────────────────────
+${data.temaer.length ? data.temaer.map(t => `✓ ${t}`).join('\n') : '(ingen valgt)'}
+
+${data.andreTemaer ? `Andre temaer:\n${data.andreTemaer}\n` : ''}
+VURDERING AV ELEV
+─────────────────────────────────────
+${VURDERINGER.map(v => `${v.label.padEnd(25)} ${ratingWord(data.vurderinger[v.id])}`).join('\n')}
+
+${data.vurderingNotat ? `Kommentar:\n${data.vurderingNotat}\n` : ''}
+KOMPETANSEMÅL OG FAGLIG UTBYTTE
+─────────────────────────────────────
+Kompetansemål:\n${data.kompetansemaal || '–'}
+
+Faglig utbytte:\n${data.fagligUtbytte || '–'}
+
+TILBAKEMELDING FRA ARBEIDSGIVER
+─────────────────────────────────────
+Positivt:\n${data.agPositiv || '–'}
+
+Utviklingsområder:\n${data.agUtfordring || '–'}
+
+OPPFØLGING
+─────────────────────────────────────
+Tiltak/avtaler:\n${data.tiltak || '–'}
+Neste besøk:     ${data.nesteBesok ? new Date(data.nesteBesok).toLocaleDateString('no-NO') : '–'}
+Kontaktinfo AG:  ${data.kontaktInfo || '–'}
+
+EGET NOTAT
+─────────────────────────────────────
+${data.egetNotat || '(ingen)'}
+
+═══════════════════════════════════════`;
+
+  document.getElementById('export-content').textContent = txt;
+  document.getElementById('export-modal').classList.add('open');
+}
+
+// ── COPY TO CLIPBOARD ──────────────────────────────────────────────────────────
+document.getElementById('export-copy-btn').addEventListener('click', () => {
+  const txt = document.getElementById('export-content').textContent;
+  navigator.clipboard.writeText(txt).then(() => toast('Kopiert til utklippstavlen!')).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); toast('Kopiert!');
+  });
+});
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── ATTACH LISTENERS ──────────────────────────────────────────────────────────
+document.getElementById('btn-new-student').addEventListener('click', openNew);
+document.getElementById('btn-close-form').addEventListener('click', closeForm);
+document.getElementById('btn-save').addEventListener('click', saveNow);
+document.getElementById('btn-export').addEventListener('click', exportNote);
+document.getElementById('btn-close-export').addEventListener('click', () =>
+  document.getElementById('export-modal').classList.remove('open'));
+
+// Autosave on any input change
+document.getElementById('form-area').addEventListener('input', triggerAutosave);
+
+// Warn before leaving page with unsaved changes
+window.addEventListener('beforeunload', e => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ── INIT ────────────────────────────────────────────────────────────────────────
+buildTemaList();
+buildVurderingGroup();
+renderStudentList();
+</script>
+</body>
+</html>
